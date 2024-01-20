@@ -5,44 +5,46 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import pandas as pd
 
+name = input("Enter Here : ")
 driver = webdriver.Chrome()
 driver.get("https://www.amazon.in")
 driver.maximize_window()
 
 search_box = driver.find_element(By.ID, "twotabsearchtextbox")
 search_box.clear()
-search_box.send_keys("hp laptop")
+search_box.send_keys(name)
 driver.find_element(By.ID, "nav-search-submit-button").click()
-driver.find_element(By.XPATH, "//span[text()='Dell']").click()
+# driver.find_element(By.XPATH, "//span[text()='Dell']").click()
 
-laptops = driver.find_elements(By.XPATH, '//div[@data-component-type="s-search-result"]')
+products = driver.find_elements(By.XPATH, '//div[@data-component-type="s-search-result"]')
 
-laptop_name = []
-laptop_price = []
+product_name = []
+product_price = []
 no_reviews = []
+product_discount = []
 final_list = []
 
-for laptop in laptops:
+for product in products:
 
-    names = laptop.find_elements(By.XPATH, ".//span[@class='a-size-medium a-color-base a-text-normal']")
+    names = product.find_elements(By.XPATH, ".//span[@class='a-size-medium a-color-base a-text-normal']")
     for name in names:
-        laptop_name.append(name.text)
+        product_name.append(name.text)
 
     try:
-        if len(laptop.find_elements(By.XPATH, ".//span[@class='a-price-whole']")) > 0:
-            prices = laptop.find_elements(By.XPATH, ".//span[@class='a-price-whole']")
+        if len(product.find_elements(By.XPATH, ".//span[@class='a-price-whole']")) > 0:
+            prices = product.find_elements(By.XPATH, ".//span[@class='a-price-whole']")
             for price in prices:
                 # print('the lenght is ===>',len(price.text))
-                laptop_price.append(price.text)
+                product_price.append(price.text)
         else:
-            laptop_price.append("0")
+            product_price.append("0")
     except:
         pass
     # reviews = laptop.find_elements(By.XPATH,".//span[@class='a-size-base s-underline-text']")
 
     try:
-        if len(laptop.find_elements(By.XPATH, ".//span[@class='a-size-base s-underline-text']")) > 0:
-            reviews = laptop.find_elements(By.XPATH, ".//span[@class='a-size-base s-underline-text']")
+        if len(product.find_elements(By.XPATH, ".//span[@class='a-size-base s-underline-text']")) > 0:
+            reviews = product.find_elements(By.XPATH, ".//span[@class='a-size-base s-underline-text']")
             for review in reviews:
                 # print('the length is===>', len(review.text), review.text)
                 no_reviews.append(review.text)
@@ -51,14 +53,14 @@ for laptop in laptops:
     except:
         pass
 
-print('no of laptops==>', len(laptop_name))
-print('no of prices==>', len(laptop_price))
-print('no of reviews==>', len(no_reviews))
+print('Number of Products==>', len(product_name))
+print('Number of prices==>', len(product_price))
+print('Number of reviews==>', len(no_reviews))
 
+existing_df = pd.read_excel(r"E:\SEM 3\laptop.xlsx")
+new_data = pd.DataFrame(zip(product_name, product_price, no_reviews), columns=['Product_Name','Product_Price', 'Reviews'])
+combined_df = pd.concat([existing_df,new_data],ignore_index=True)
 
-
-df = pd.DataFrame(zip(laptop_name, laptop_price, no_reviews), columns=['laptop_name', 'laptop_price', 'no_reviews'])
-
-df.to_excel(r"E:\SEM 3\hgfgff.xlsx", index=False)
+combined_df.to_excel(r"E:\SEM 3\laptop.xlsx", index=False)
 
 driver.quit()
